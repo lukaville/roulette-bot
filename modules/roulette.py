@@ -1,6 +1,8 @@
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
+from db.mysql_store import STATE_IDLE, STATE_SEARCH
+
 KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
     KeyboardButton(
         text="/roulette"
@@ -32,6 +34,21 @@ class RouletteModule(object):
 
     def roulette_command(self, bot, update):
         user_id = update.message.from_user.id
+        user = self.store.get_user(user_id)
+
+        if user is None:
+            user = self.store.create_user(user_id)
+
+        if user['chat_with']:
+            paired_user_id = user['chat_with']
+            self.store.disconnect(user_id, paired_user_id)
+            bot.sendMessage(user_id,
+                            text="Disconnected, searching new user...",
+                            reply_markup=KEYBOARD_MARKUP)
+            bot.sendMessage(paired_user_id,
+                            text="Disconnected. Use /roulette to connect to new user...",
+                            reply_markup=KEYBOARD_MARKUP)
+
         paired_user_id = self.store.roulette(user_id)
 
         if paired_user_id is None:
@@ -48,16 +65,25 @@ class RouletteModule(object):
 
     def message(self, bot, update):
         user_id = update.message.from_user.id
-        paired_user_id = self.store.get_user(user_id)['chat_with']
 
-        if paired_user_id is not None:
-            bot.sendMessage(paired_user_id,
-                            text=update.message.text,
-                            reply_markup=KEYBOARD_MARKUP)
-        else:
-            bot.sendMessage(user_id,
-                            text='Wait...',
-                            reply_markup=KEYBOARD_MARKUP)
+        user = self.store.get_user(user_id)
+        if user:
+            paired_user_id = user['chat_with']
+
+            if paired_user_id == STATE_SEARCH:
+                bot.sendMessage(user_id,
+                                text='Wait...',
+                                reply_markup=KEYBOARD_MARKUP)
+
+            if paired_user_id == STATE_IDLE:
+                bot.sendMessage(user_id,
+                                text='Send /roulette to connect with new user',
+                                reply_markup=KEYBOARD_MARKUP)
+
+            if paired_user_id is not None:
+                bot.sendMessage(paired_user_id,
+                                text=update.message.text,
+                                reply_markup=KEYBOARD_MARKUP)
 
     def get_handlers(self):
         return self.handlers
