@@ -1,3 +1,5 @@
+import random
+
 from telegram import KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
@@ -5,6 +7,7 @@ from telegram.ext.dispatcher import run_async
 from db.mysql_store import STATE_IDLE, STATE_SEARCH
 from i18n import _
 
+# Default keyboard markup with one button
 KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
     KeyboardButton(
         text="/roulette"
@@ -23,6 +26,11 @@ def start_command(bot, update):
 
 
 def format_message(original_message):
+    """
+    Format original message from user (adds header)
+    :param original_message: telegram message
+    :return: formatted messaged
+    """
     return _('MESSAGE_BODY') % original_message.text
 
 
@@ -33,6 +41,7 @@ class RouletteModule(object):
             CommandHandler('help', help_command),
             CommandHandler('roulette', self.roulette_command),
             MessageHandler([Filters.text], self.message)
+            # TODO: resend stickers, audio etc.
         ]
 
         self.store = store
@@ -51,7 +60,7 @@ class RouletteModule(object):
             bot.sendMessage(user_id, text=_('DISCONNECTED_SEARCH_NEW'), reply_markup=KEYBOARD_MARKUP)
             bot.sendMessage(paired_user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
 
-        paired_user_id = self.store.roulette(user_id)
+        paired_user_id = self.store.pair_user(user_id, lambda users: random.choice(users))
 
         if paired_user_id is None:
             bot.sendMessage(user_id, text=_('SEARCHING'), reply_markup=KEYBOARD_MARKUP)

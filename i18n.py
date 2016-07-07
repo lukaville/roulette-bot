@@ -1,4 +1,5 @@
-# TODO: extract to files, use built-in i18n module
+# TODO: extract to files, add multi-language support, use built-in i18n module\
+
 DEFAULT_LOCALE = {
     'HELP': "Use /roulette command to connect with random user",
     'START': "Hi! I can connect you with random stranger.\nLet's start! Use /roulette command.",
@@ -13,4 +14,9 @@ DEFAULT_LOCALE = {
 
 
 def _(key):
+    """
+    Return localized string by key
+    :param key: Localization string key
+    :return: Localized string
+    """
     return DEFAULT_LOCALE[key]

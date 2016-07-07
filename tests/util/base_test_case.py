@@ -3,12 +3,8 @@ import unittest
 
 # Patch async decorator to run async methods sequentially
 import telegram.ext.dispatcher as dispatcher
-
-
 def empty(func):
     return func
-
-
 dispatcher.run_async = empty
 
 from telegram import Update
@@ -32,8 +28,7 @@ class IntegrationTestCase(unittest.TestCase):
 
         self.bot = MockBot()
         self.updater = Updater(bot=self.bot)
-        dp = self.updater.dispatcher
-        load_modules(dp, [RouletteModule(self.store)])
+        load_modules(self.updater.dispatcher, [RouletteModule(self.store)])
 
     def tearDown(self):
         self.store.drop_db()

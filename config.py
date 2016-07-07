@@ -9,5 +9,6 @@ config = {
     'MYSQL_CONNECTION_POOL_SIZE': 8
 }
 
+# Update config with environment variables
 for k, v in config.items():
     config[k] = os.getenv(k, v)

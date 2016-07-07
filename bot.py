@@ -23,6 +23,11 @@ def error(bot, update, err):
 
 
 def load_modules(dispatcher, modules):
+    """
+    Add handlers from modules to dispatcher
+    :param dispatcher: telegram dispatcher
+    :param modules: bot modules
+    """
     for module in modules:
         for handler in module.get_handlers():
             dispatcher.add_handler(handler)
