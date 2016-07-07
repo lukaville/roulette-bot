@@ -22,6 +22,10 @@ def start_command(bot, update):
                     reply_markup=KEYBOARD_MARKUP)
 
 
+def format_message(original_message):
+    return _('MESSAGE_BODY') % original_message.text
+
+
 class RouletteModule(object):
     def __init__(self, store):
         self.handlers = [
@@ -82,8 +86,9 @@ class RouletteModule(object):
                                 reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id and paired_user_id > 0:
+                message = format_message(update.message)
                 bot.sendMessage(paired_user_id,
-                                text=update.message.text,
+                                text=message,
                                 reply_markup=KEYBOARD_MARKUP)
 
     def get_handlers(self):

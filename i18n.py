@@ -8,6 +8,7 @@ DEFAULT_LOCALE = {
     'ESTABLISHED': "Connection established. Say hello :)",
     'ERROR_SEARCHING': "Please, wait. User not found yet...",
     'ERROR_IDLE': "You are not connected. Use /roulette command to connect with random user.",
+    'MESSAGE_BODY': "Anonymous:\n%s",
 }
 
 
