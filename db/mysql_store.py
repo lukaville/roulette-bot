@@ -35,7 +35,7 @@ def create_user(cursor, user_id):
 
     cursor.execute(add_user, {
         'user_id': user_id,
-        'chat_with': None
+        'chat_with': STATE_SEARCH
     })
 
 
@@ -107,7 +107,7 @@ class MySQLStore(object):
         create_user(cursor, user_id)
         connection.commit()
         cursor.close()
-        return {'user_id': user_id, 'chat_with': None}
+        return {'user_id': user_id, 'chat_with': STATE_SEARCH}
 
     @connect
     def disconnect(self, user_id, paired_user_id, connection):
