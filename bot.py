@@ -10,7 +10,6 @@ from telegram.ext import Updater
 
 from config import config
 from db.mysql_store import MySQLStore
-from modules.chat import ChatModule
 from modules.roulette import RouletteModule
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -40,7 +39,7 @@ def main():
     updater = Updater(os.getenv('TELEGRAM_TOKEN'))
 
     dp = updater.dispatcher
-    load_modules(dp, [ChatModule(store), RouletteModule(store)])
+    load_modules(dp, [RouletteModule(store)])
 
     dp.add_error_handler(error)
 
