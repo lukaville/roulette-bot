@@ -75,6 +75,7 @@ class MySQLStore(object):
         self.database = config['MYSQL_DATABASE']
         self.pool_size = config['MYSQL_CONNECTION_POOL_SIZE']
 
+        # TODO: wait MySQL available
         self.create_db()
 
     def _get_connection(self):

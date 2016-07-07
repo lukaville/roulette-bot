@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  db:
+    image: mysql
+    env_file: enviroments.private
+
+  bot:
+    build: .
+    depends_on:
+      - db
+    env_file: enviroments.private
+    environment:
+      MYSQL_HOST: db
+    restart: always

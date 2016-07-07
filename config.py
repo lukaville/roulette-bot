@@ -5,7 +5,7 @@ config = {
     'MYSQL_HOST': '192.168.99.100',
     'MYSQL_DATABASE': 'roulette',
     'MYSQL_USER': 'root',
-    'MYSQL_PASSWORD': 'password',
+    'MYSQL_ROOT_PASSWORD': 'password',
     'MYSQL_CONNECTION_POOL_SIZE': 8
 }
 
