@@ -5,6 +5,13 @@ import mysql.connector
 STATE_IDLE = None
 STATE_SEARCH = -1
 
+DB_SCHEMA = ("CREATE TABLE IF NOT EXISTS `users` ( "
+             "`id` INT(11) NOT NULL, "
+             "`chat_with` INT(11) DEFAULT NULL, "
+             "PRIMARY KEY (`id`), "
+             "UNIQUE KEY `id_UNIQUE` (`id`) "
+             ") ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci; ")
+
 
 def connect(fn):
     def wrap_function(self, *args, **kwargs):
@@ -76,16 +83,42 @@ class MySQLStore(object):
             'user': config['MYSQL_USER'],
             'password': config['MYSQL_PASSWORD'],
             'host': config['MYSQL_HOST'],
-            'database': config['MYSQL_DATABASE'],
         }
+
+        self.database = config['MYSQL_DATABASE']
         self.pool_size = config['MYSQL_CONNECTION_POOL_SIZE']
 
+        self.create_db()
+
     def _get_connection(self):
+        # TODO: add pooling
         return mysql.connector.connect(
-            pool_name='pool',
-            pool_size=self.pool_size,
             **self.config
         )
+
+    def create_db(self):
+        connection = mysql.connector.connect(**self.config)
+        cursor = connection.cursor()
+        cursor.execute('CREATE DATABASE IF NOT EXISTS {}'.format(self.database))
+        cursor.close()
+        connection.close()
+
+        self.config['database'] = self.database
+        self._create_schema()
+
+    @connect
+    def _create_schema(self, connection):
+        cursor = connection.cursor()
+        cursor.execute(DB_SCHEMA)
+        cursor.close()
+
+    @connect
+    def drop_db(self, connection):
+        cursor = connection.cursor()
+        cursor.execute('DROP DATABASE {}'.format(self.database), {
+            'db': self.config['database']
+        })
+        cursor.close()
 
     @connect
     def get_user(self, user_id, connection):
