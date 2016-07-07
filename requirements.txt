@@ -1,1 +1,2 @@
 python-telegram-bot==4.2.1
+mysql-connector

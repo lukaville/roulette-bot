@@ -18,12 +18,14 @@ def start_command(bot, update):
                     text="Start!", reply_markup=ReplyKeyboardMarkup(keyboard=buttons, one_time_keyboard=True))
 
 
-class CommandsModule(object):
-    def __init__(self):
+class RouletteModule(object):
+    def __init__(self, store):
         self.handlers = [
             CommandHandler('start', start_command),
             CommandHandler('help', help_command),
         ]
+
+        self.store = store
 
     def get_handlers(self):
         return self.handlers

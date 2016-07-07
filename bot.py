@@ -8,7 +8,10 @@ import os
 
 from telegram.ext import Updater
 
-from commands import CommandsModule
+from config import config
+from db.mysql_store import MySQLStore
+from modules.chat import ChatModule
+from modules.roulette import RouletteModule
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -27,15 +30,17 @@ def load_modules(dispatcher, modules):
 
 
 def main():
-    token = os.getenv('TELEGRAM_TOKEN')
+    token = config['TELEGRAM_TOKEN']
 
     if token is None:
         raise RuntimeError("You must specify TELEGRAM_TOKEN environment variable")
 
+    store = MySQLStore(config)
+
     updater = Updater(os.getenv('TELEGRAM_TOKEN'))
 
     dp = updater.dispatcher
-    load_modules(dp, [CommandsModule()])
+    load_modules(dp, [ChatModule(store), RouletteModule(store)])
 
     dp.add_error_handler(error)
 
