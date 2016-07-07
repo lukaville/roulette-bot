@@ -2,6 +2,7 @@ from telegram import KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import CommandHandler, MessageHandler, Filters
 
 from db.mysql_store import STATE_IDLE, STATE_SEARCH
+from i18n import _
 
 KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
     KeyboardButton(
@@ -12,12 +13,12 @@ KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
 
 def help_command(bot, update):
     bot.sendMessage(update.message.chat_id,
-                    text="Help!")
+                    text=_('HELP'))
 
 
 def start_command(bot, update):
     bot.sendMessage(update.message.chat_id,
-                    text="Start!",
+                    text=_('START'),
                     reply_markup=KEYBOARD_MARKUP)
 
 
@@ -39,28 +40,28 @@ class RouletteModule(object):
         if user is None:
             user = self.store.create_user(user_id)
 
-        if user['chat_with']:
+        if user['chat_with'] and user['chat_with'] > 0:
             paired_user_id = user['chat_with']
             self.store.disconnect(user_id, paired_user_id)
             bot.sendMessage(user_id,
-                            text="Disconnected, searching new user...",
+                            text=_('DISCONNECTED_SEARCH_NEW'),
                             reply_markup=KEYBOARD_MARKUP)
             bot.sendMessage(paired_user_id,
-                            text="Disconnected. Use /roulette to connect to new user...",
+                            text=_('DISCONNECTED'),
                             reply_markup=KEYBOARD_MARKUP)
 
         paired_user_id = self.store.roulette(user_id)
 
         if paired_user_id is None:
             bot.sendMessage(user_id,
-                            text="Searching couple...",
+                            text=_('SEARCHING'),
                             reply_markup=KEYBOARD_MARKUP)
         else:
             bot.sendMessage(user_id,
-                            text="Connection established with " + str(paired_user_id),
+                            text=_('ESTABLISHED'),
                             reply_markup=KEYBOARD_MARKUP)
             bot.sendMessage(paired_user_id,
-                            text="Hi! Connection established with " + str(user_id),
+                            text=_('ESTABLISHED'),
                             reply_markup=KEYBOARD_MARKUP)
 
     def message(self, bot, update):
@@ -72,15 +73,15 @@ class RouletteModule(object):
 
             if paired_user_id == STATE_SEARCH:
                 bot.sendMessage(user_id,
-                                text='Wait...',
+                                text=_('ERROR_SEARCHING'),
                                 reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id == STATE_IDLE:
                 bot.sendMessage(user_id,
-                                text='Send /roulette to connect with new user',
+                                text=_('ERROR_IDLE'),
                                 reply_markup=KEYBOARD_MARKUP)
 
-            if paired_user_id is not None:
+            if paired_user_id and paired_user_id > 0:
                 bot.sendMessage(paired_user_id,
                                 text=update.message.text,
                                 reply_markup=KEYBOARD_MARKUP)
