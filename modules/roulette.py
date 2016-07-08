@@ -1,13 +1,15 @@
 import random
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler
 from telegram.ext.dispatcher import run_async
 
 from db.mysql_store import STATE_IDLE, STATE_SEARCH
 from i18n import _
 
 # Default keyboard markup with one button
+from resend import USER_MESSAGE_FILTERS, resend_message
+
 KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
     KeyboardButton(
         text="/roulette"
@@ -25,13 +27,12 @@ def start_command(bot, update):
     bot.sendMessage(update.message.from_user.id, text=_('START'), reply_markup=KEYBOARD_MARKUP)
 
 
-def format_message(original_message):
+def format_message(original_text):
     """
-    Format original message from user (adds header)
-    :param original_message: telegram message
-    :return: formatted messaged
+    Format original message text from user (adds header)
+    :return: formatted original_text
     """
-    return _('MESSAGE_BODY') % original_message.text
+    return _('MESSAGE_BODY') % original_text
 
 
 class RouletteModule(object):
@@ -40,8 +41,7 @@ class RouletteModule(object):
             CommandHandler('start', start_command),
             CommandHandler('help', help_command),
             CommandHandler('roulette', self.roulette_command),
-            MessageHandler([Filters.text], self.message)
-            # TODO: resend stickers, audio etc.
+            MessageHandler([f for f, s in USER_MESSAGE_FILTERS], self.message)
         ]
 
         self.store = store
@@ -83,8 +83,8 @@ class RouletteModule(object):
                 bot.sendMessage(user_id, text=_('ERROR_IDLE'), reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id and paired_user_id > 0:
-                message = format_message(update.message)
-                bot.sendMessage(paired_user_id, text=message, reply_markup=KEYBOARD_MARKUP)
+                resend_message(bot, update.message, paired_user_id, format_message,
+                               reply_markup=KEYBOARD_MARKUP)
 
     def get_handlers(self):
         return self.handlers
