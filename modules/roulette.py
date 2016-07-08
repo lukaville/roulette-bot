@@ -94,8 +94,8 @@ class RouletteModule(object):
                     resend_message(bot, update.message, paired_user_id, format_message)
                 except Unauthorized:
                     bot.sendMessage(user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
-                    self.store.disconnect(user_id)
-                    self.store.disconnect(paired_user_id)
+                    self.store.disconnect(user_id, None)
+                    self.store.disconnect(paired_user_id, None)
 
     @run_async
     def disconnect_command(self, bot, update):
@@ -105,11 +105,11 @@ class RouletteModule(object):
 
         if user:
             bot.sendMessage(user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
-            self.store.disconnect(user_id)
+            self.store.disconnect(user_id, None)
 
             paired_user_id = user['chat_with']
             if paired_user_id and paired_user_id > 0:
-                self.store.disconnect(paired_user_id)
+                self.store.disconnect(paired_user_id, None)
                 bot.sendMessage(paired_user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
 
     def get_handlers(self):
