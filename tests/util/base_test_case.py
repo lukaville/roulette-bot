@@ -20,7 +20,7 @@ from config import config
 
 class IntegrationTestCase(unittest.TestCase):
     def setUp(self):
-        store_config = config.apply({
+        store_config = config.update({
             'MYSQL_DATABASE': 'roulette_test'
         })
 
