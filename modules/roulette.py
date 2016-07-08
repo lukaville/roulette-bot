@@ -1,3 +1,4 @@
+import logging
 import random
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup
@@ -6,10 +7,11 @@ from telegram.ext.dispatcher import run_async
 
 from db.mysql_store import STATE_IDLE, STATE_SEARCH
 from i18n import _
-
-# Default keyboard markup with one button
 from resend import USER_MESSAGE_FILTERS, resend_message
 
+logger = logging.getLogger(__name__)
+
+# Default keyboard markup with one button
 KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
     KeyboardButton(
         text="/roulette"
@@ -65,6 +67,7 @@ class RouletteModule(object):
         if paired_user_id is None:
             bot.sendMessage(user_id, text=_('SEARCHING'), reply_markup=KEYBOARD_MARKUP)
         else:
+            logger.info('Paired ' + str(update.message.from_user) + ' with ' + str(paired_user_id))
             bot.sendMessage(user_id, text=_('ESTABLISHED'), reply_markup=KEYBOARD_MARKUP)
             bot.sendMessage(paired_user_id, text=_('ESTABLISHED'), reply_markup=KEYBOARD_MARKUP)
 
@@ -83,6 +86,7 @@ class RouletteModule(object):
                 bot.sendMessage(user_id, text=_('ERROR_IDLE'), reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id and paired_user_id > 0:
+                logger.info('Resending ' + str(update.message))
                 resend_message(bot, update.message, paired_user_id, format_message,
                                reply_markup=KEYBOARD_MARKUP)
 
