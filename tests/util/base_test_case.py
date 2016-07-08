@@ -20,11 +20,11 @@ from config import config
 
 class IntegrationTestCase(unittest.TestCase):
     def setUp(self):
-        store_config = config.update({
+        config.update({
             'MYSQL_DATABASE': 'roulette_test'
         })
 
-        self.store = MySQLStore(store_config)
+        self.store = MySQLStore(config)
 
         self.bot = MockBot()
         self.updater = Updater(bot=self.bot)
