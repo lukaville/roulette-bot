@@ -2,6 +2,7 @@ import logging
 import random
 
 from telegram import KeyboardButton, ReplyKeyboardMarkup
+from telegram.error import Unauthorized
 from telegram.ext import CommandHandler, MessageHandler
 from telegram.ext.dispatcher import run_async
 
@@ -43,6 +44,7 @@ class RouletteModule(object):
             CommandHandler('start', start_command),
             CommandHandler('help', help_command),
             CommandHandler('roulette', self.roulette_command),
+            CommandHandler('disconnect', self.disconnect_command),
             MessageHandler([f for f, s in USER_MESSAGE_FILTERS], self.message)
         ]
 
@@ -87,8 +89,28 @@ class RouletteModule(object):
 
             if paired_user_id and paired_user_id > 0:
                 logger.info('Resending ' + str(update.message))
-                resend_message(bot, update.message, paired_user_id, format_message,
-                               reply_markup=KEYBOARD_MARKUP)
+
+                try:
+                    resend_message(bot, update.message, paired_user_id, format_message)
+                except Unauthorized:
+                    bot.sendMessage(user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
+                    self.store.disconnect(user_id)
+                    self.store.disconnect(paired_user_id)
+
+    @run_async
+    def disconnect_command(self, bot, update):
+        user_id = update.message.from_user.id
+
+        user = self.store.get_user(user_id)
+
+        if user:
+            bot.sendMessage(user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
+            self.store.disconnect(user_id)
+
+            paired_user_id = user['chat_with']
+            if paired_user_id and paired_user_id > 0:
+                self.store.disconnect(paired_user_id)
+                bot.sendMessage(paired_user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
 
     def get_handlers(self):
         return self.handlers
