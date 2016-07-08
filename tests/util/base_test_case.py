@@ -19,9 +19,10 @@ from util.mock_bot import MockBot
 class IntegrationTestCase(unittest.TestCase):
     def setUp(self):
         self.store = MySQLStore({
-            'MYSQL_HOST': 'db',
+            'MYSQL_HOST': '127.0.0.1',
             'MYSQL_USER': 'root',
-            'MYSQL_ROOT_PASSWORD': 'password',
+            'MYSQL_ROOT_PASSWORD': '',
+            'MYSQL_DATABASE': 'roulette_test',
             'MYSQL_CONNECTION_POOL_SIZE': 1
         })
 
