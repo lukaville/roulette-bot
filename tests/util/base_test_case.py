@@ -15,16 +15,16 @@ from db.mysql_store import MySQLStore
 from modules.roulette import RouletteModule
 from util.mock_bot import MockBot
 
+from config import config
+
 
 class IntegrationTestCase(unittest.TestCase):
     def setUp(self):
-        self.store = MySQLStore({
-            'MYSQL_HOST': '127.0.0.1',
-            'MYSQL_USER': 'root',
-            'MYSQL_ROOT_PASSWORD': '',
-            'MYSQL_DATABASE': 'roulette_test',
-            'MYSQL_CONNECTION_POOL_SIZE': 1
+        store_config = config.apply({
+            'MYSQL_DATABASE': 'roulette_test'
         })
+
+        self.store = MySQLStore(store_config)
 
         self.bot = MockBot()
         self.updater = Updater(bot=self.bot)
