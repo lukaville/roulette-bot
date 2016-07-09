@@ -20,16 +20,6 @@ KEYBOARD_MARKUP = ReplyKeyboardMarkup(one_time_keyboard=True, keyboard=[[
 ]])
 
 
-@run_async
-def help_command(bot, update):
-    bot.sendMessage(update.message.from_user.id, text=_('HELP'))
-
-
-@run_async
-def start_command(bot, update):
-    bot.sendMessage(update.message.from_user.id, text=_('START'), reply_markup=KEYBOARD_MARKUP)
-
-
 def format_message(original_text):
     """
     Format original message text from user (adds header)
@@ -39,21 +29,24 @@ def format_message(original_text):
 
 
 class RouletteModule(object):
-    def __init__(self, store):
+    def __init__(self, store, analytics):
         self.handlers = [
-            CommandHandler('start', start_command),
-            CommandHandler('help', help_command),
+            CommandHandler('start', self.start_command),
+            CommandHandler('help', self.help_command),
             CommandHandler('roulette', self.roulette_command),
             CommandHandler('disconnect', self.disconnect_command),
             MessageHandler([f for f, s in USER_MESSAGE_FILTERS], self.message)
         ]
 
         self.store = store
+        self.analytics = analytics
 
     @run_async
     def roulette_command(self, bot, update):
         user_id = update.message.from_user.id
         user = self.store.get_user(user_id)
+
+        self.analytics.track(user_id, update.message.to_dict(), 'roulette_command')
 
         if user is None:
             user = self.store.create_user(user_id)
@@ -82,14 +75,16 @@ class RouletteModule(object):
             paired_user_id = user['chat_with']
 
             if paired_user_id == STATE_SEARCH:
+                self.analytics.track(user_id, update.message.to_dict(), 'error_search')
                 bot.sendMessage(user_id, text=_('ERROR_SEARCHING'), reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id == STATE_IDLE:
+                self.analytics.track(user_id, update.message.to_dict(), 'error_idle')
                 bot.sendMessage(user_id, text=_('ERROR_IDLE'), reply_markup=KEYBOARD_MARKUP)
 
             if paired_user_id and paired_user_id > 0:
                 logger.info('Resending ' + str(update.message))
-
+                self.analytics.track(user_id, update.message.to_dict(), 'message')
                 try:
                     resend_message(bot, update.message, paired_user_id, format_message)
                 except Unauthorized:
@@ -100,6 +95,7 @@ class RouletteModule(object):
     @run_async
     def disconnect_command(self, bot, update):
         user_id = update.message.from_user.id
+        self.analytics.track(user_id, update.message.to_dict(), 'disconnect_command')
 
         user = self.store.get_user(user_id)
 
@@ -111,6 +107,18 @@ class RouletteModule(object):
             if paired_user_id and paired_user_id > 0:
                 self.store.disconnect(paired_user_id, None)
                 bot.sendMessage(paired_user_id, text=_('DISCONNECTED'), reply_markup=KEYBOARD_MARKUP)
+
+    @run_async
+    def help_command(self, bot, update):
+        user_id = update.message.from_user.id
+        bot.sendMessage(user_id, text=_('HELP'))
+        self.analytics.track(user_id, update.message.to_dict(), 'help_command')
+
+    @run_async
+    def start_command(self, bot, update):
+        user_id = update.message.from_user.id
+        bot.sendMessage(user_id, text=_('START'), reply_markup=KEYBOARD_MARKUP)
+        self.analytics.track(user_id, update.message.to_dict(), 'start_command')
 
     def get_handlers(self):
         return self.handlers

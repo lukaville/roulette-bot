@@ -2,6 +2,7 @@ import os
 
 config = {
     'TELEGRAM_TOKEN': None,
+    'BOTAN_TOKEN': None,
     'MYSQL_HOST': '192.168.99.100',
     'MYSQL_DATABASE': 'roulette',
     'MYSQL_USER': 'root',

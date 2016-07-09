@@ -8,6 +8,7 @@ import os
 
 from telegram.ext import Updater
 
+from botan import BotanAnalytics
 from config import config
 from db.mysql_store import MySQLStore
 from modules.roulette import RouletteModule
@@ -40,11 +41,12 @@ def main():
         raise RuntimeError("You must specify TELEGRAM_TOKEN environment variable")
 
     store = MySQLStore(config)
+    analytics = BotanAnalytics(config['BOTAN_TOKEN'])
 
     updater = Updater(os.getenv('TELEGRAM_TOKEN'))
 
     dp = updater.dispatcher
-    load_modules(dp, [RouletteModule(store)])
+    load_modules(dp, [RouletteModule(store, analytics)])
 
     dp.add_error_handler(error)
 
