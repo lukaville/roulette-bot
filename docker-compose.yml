@@ -2,8 +2,10 @@ version: '2'
 
 services:
   db:
-    image: mysql
+    build: mysql
     env_file: enviroments.private
+    volumes:
+      - /data/mysql:/var/lib/mysql
 
   bot:
     build: .
